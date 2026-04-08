@@ -44,21 +44,25 @@
 
     document.getElementById('connect').addEventListener('click', async () => {
       try {
-        // Request BLE device
+        // Request BLE device (FIXED UUID FORMAT)
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ name: 'UltrasonicSensor' }],
-          optionalServices: ['180c'] // BLE service
+          optionalServices: [0x180C]  // ✅ FIXED
         });
 
         // Connect to GATT server
         const server = await device.gatt.connect();
-        const service = await server.getPrimaryService('180c');
-        distanceChar = await service.getCharacteristic('2a56');
+
+        // Get service + characteristic (FIXED UUID FORMAT)
+        const service = await server.getPrimaryService(0x180C);   // ✅ FIXED
+        const characteristic = await service.getCharacteristic(0x2A56); // ✅ FIXED
 
         // Enable notifications
-        await distanceChar.startNotifications();
-        distanceChar.addEventListener('characteristicvaluechanged', event => {
-          const value = new TextDecoder().decode(event.target.value); // convert string bytes
+        await characteristic.startNotifications();
+
+        characteristic.addEventListener('characteristicvaluechanged', event => {
+          // Since Arduino sends STRING → decode text
+          const value = new TextDecoder().decode(event.target.value);
           document.getElementById('distance').textContent = `Distance: ${value} cm`;
         });
 
