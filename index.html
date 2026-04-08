@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultrasonic Sensor Live</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: #f0f0f0;
+    }
+    h1 {
+      color: #333;
+    }
+    #distance {
+      font-size: 3rem;
+      color: #007AFF;
+      margin: 2rem 0;
+    }
+    button {
+      font-size: 1.2rem;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      background: #007AFF;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005FCC;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Ultrasonic Sensor Live</h1>
+  <button id="connect">Connect to Sensor</button>
+  <div id="distance">Distance: 0 cm</div>
+
+  <script>
+    let distanceChar;
+
+    document.getElementById('connect').addEventListener('click', async () => {
+      try {
+        // Request BLE device
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ name: 'UltrasonicSensor' }],
+          optionalServices: ['180c'] // BLE service
+        });
+
+        // Connect to GATT server
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService('180c');
+        distanceChar = await service.getCharacteristic('2a56');
+
+        // Enable notifications
+        await distanceChar.startNotifications();
+        distanceChar.addEventListener('characteristicvaluechanged', event => {
+          const value = new TextDecoder().decode(event.target.value); // convert string bytes
+          document.getElementById('distance').textContent = `Distance: ${value} cm`;
+        });
+
+        document.getElementById('connect').textContent = "Connected ✅";
+        document.getElementById('connect').disabled = true;
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to connect: " + err);
+      }
+    });
+  </script>
+
+</body>
+</html>
