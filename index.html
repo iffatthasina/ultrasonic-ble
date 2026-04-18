@@ -19,7 +19,6 @@
       padding: 16px;
     }
 
-    /* HEADER */
     .header {
       border-top: 6px solid #60a5fa;
       padding: 20px 16px;
@@ -63,7 +62,13 @@
       margin-top: 4px;
     }
 
-    /* TIMELINE */
+    .debug {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+      font-family: monospace;
+    }
+
     .section-title {
       font-size: 12px;
       color: #6b7280;
@@ -125,6 +130,7 @@
       border: none;
       border-radius: 8px;
       font-size: 16px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -139,12 +145,16 @@
         <div class="title">Upcoming 51B: Rockridge Bart</div>
 
         <div class="alert">
-          <div id="alertDot" class="dot" style="background:red;"></div>
-          <span id="statusText">Consider Alternative Route</span>
+          <div id="alertDot" class="dot" style="background: #22c55e;"></div>
+          <span id="statusText">Good to Board</span>
         </div>
 
         <div id="availability" class="availability">
           Seat Availability: 0/37
+        </div>
+
+        <div id="debugDistance" class="debug">
+          dist: —
         </div>
       </div>
     </div>
@@ -177,6 +187,27 @@
 const threshold = 20;
 const maxSeats = 37;
 
+function updateUI(distance) {
+  const occupied = distance < threshold ? 1 : 0;
+
+  document.getElementById('availability').textContent =
+    `Seat Availability: ${occupied}/${maxSeats}`;
+
+  document.getElementById('debugDistance').textContent =
+    `dist: ${distance} cm`;
+
+  const statusText = document.getElementById('statusText');
+  const alertDot = document.getElementById('alertDot');
+
+  if (occupied === 1) {
+    statusText.textContent = "Consider Alternative Route";
+    alertDot.style.background = "#ef4444";
+  } else {
+    statusText.textContent = "Good to Board";
+    alertDot.style.background = "#22c55e";
+  }
+}
+
 document.getElementById('connect').addEventListener('click', async () => {
   try {
     const device = await navigator.bluetooth.requestDevice({
@@ -193,27 +224,11 @@ document.getElementById('connect').addEventListener('click', async () => {
     characteristic.addEventListener('characteristicvaluechanged', event => {
       const raw = new TextDecoder().decode(event.target.value);
       const distance = parseInt(raw);
-
-      let occupied = (distance < threshold) ? 1 : 0;
-
-      // Update seat count
-      document.getElementById('availability').textContent =
-        `Seat Availability: ${occupied}/${maxSeats}`;
-
-      // Update status UI
-      const statusText = document.getElementById('statusText');
-      const alertDot = document.getElementById('alertDot');
-
-      if (occupied === 1) {
-        statusText.textContent = "Consider Alternative Route";
-        alertDot.style.background = "red";
-      } else {
-        statusText.textContent = "Good to Board";
-        alertDot.style.background = "green";
-      }
+      updateUI(distance);
     });
 
     document.getElementById('connect').textContent = "Connected ✅";
+    document.getElementById('connect').style.background = "#22c55e";
 
   } catch (err) {
     alert("Failed: " + err);
