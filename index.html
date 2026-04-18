@@ -15,14 +15,9 @@
       color: #333;
     }
     #distance {
-      font-size: 2rem;
+      font-size: 3rem;
       color: #007AFF;
-      margin: 1rem 0;
-    }
-    #availability {
-      font-size: 2rem;
-      margin: 1rem 0;
-      font-weight: bold;
+      margin: 2rem 0;
     }
     button {
       font-size: 1.2rem;
@@ -42,50 +37,33 @@
 
   <h1>Ultrasonic Sensor Live</h1>
   <button id="connect">Connect to Sensor</button>
-
   <div id="distance">Distance: 0 cm</div>
-  <div id="availability">Seat Availability: 0/37</div>
 
   <script>
-    const threshold = 20;   // 🔴 adjust this based on your sensor
-    const maxSeats = 37;
+    let distanceChar;
 
     document.getElementById('connect').addEventListener('click', async () => {
       try {
+        // Request BLE device (FIXED UUID FORMAT)
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ name: 'UltrasonicSensor' }],
-          optionalServices: [0x180C]
+          optionalServices: [0x180C]  // ✅ FIXED
         });
 
+        // Connect to GATT server
         const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(0x180C);
-        const characteristic = await service.getCharacteristic(0x2A56);
 
+        // Get service + characteristic (FIXED UUID FORMAT)
+        const service = await server.getPrimaryService(0x180C);   // ✅ FIXED
+        const characteristic = await service.getCharacteristic(0x2A56); // ✅ FIXED
+
+        // Enable notifications
         await characteristic.startNotifications();
 
         characteristic.addEventListener('characteristicvaluechanged', event => {
-          const raw = new TextDecoder().decode(event.target.value);
-          const distance = parseInt(raw);
-
-          // Update distance display
-          document.getElementById('distance').textContent =
-            `Distance: ${distance} cm`;
-
-          // 🔥 Convert to seat occupancy (0 or 1)
-          let occupied = (distance < threshold) ? 1 : 0;
-
-          // Update seat availability
-          const availabilityText = `Seat Availability: ${occupied}/${maxSeats}`;
-          const availabilityEl = document.getElementById('availability');
-
-          availabilityEl.textContent = availabilityText;
-
-          // Color feedback
-          if (occupied === 1) {
-            availabilityEl.style.color = 'red';
-          } else {
-            availabilityEl.style.color = 'green';
-          }
+          // Since Arduino sends STRING → decode text
+          const value = new TextDecoder().decode(event.target.value);
+          document.getElementById('distance').textContent = `Distance: ${value} cm`;
         });
 
         document.getElementById('connect').textContent = "Connected ✅";
