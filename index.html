@@ -1,153 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transit Seat Availability</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transit Tracker</title>
 
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      background: #f9fafb;
+      color: #111827;
     }
 
-    /* Header */
-    .header {
-      background: #2F80ED;
-      color: white;
+    .container {
+      max-width: 600px;
+      margin: auto;
       padding: 16px;
+    }
+
+    /* HEADER */
+    .header {
+      border-top: 6px solid #60a5fa;
+      padding: 20px 16px;
+      background: white;
+    }
+
+    .header-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .icon {
+      font-size: 32px;
+    }
+
+    .title {
       font-size: 20px;
       font-weight: bold;
     }
 
-    /* Container */
-    .container {
-      padding: 16px;
-    }
-
-    /* Card */
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .route {
-      font-size: 18px;
+    .alert {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
       font-weight: bold;
-      margin-bottom: 8px;
+      text-transform: uppercase;
     }
 
-    .destination {
-      color: gray;
-      margin-bottom: 12px;
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
     }
 
     .availability {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    /* TIMELINE */
+    .section-title {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      margin-top: 20px;
+    }
+
+    .section-header {
       font-size: 20px;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
     }
 
-    .status {
-      font-size: 14px;
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .line {
+      position: absolute;
+      left: 18px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: #3b82f6;
+    }
+
+    .stop {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .dot2 {
+      position: absolute;
+      left: -28px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 10px;
+      background: #3b82f6;
+      border-radius: 50%;
+      border: 4px solid white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .card {
+      background: #f3f4f6;
+      padding: 12px;
+      border-radius: 10px;
       font-weight: bold;
-    }
-
-    .good {
-      color: green;
-    }
-
-    .full {
-      color: red;
     }
 
     button {
+      margin-top: 16px;
       width: 100%;
       padding: 12px;
-      margin-top: 12px;
+      background: #3b82f6;
+      color: white;
       border: none;
       border-radius: 8px;
-      background: #2F80ED;
-      color: white;
       font-size: 16px;
-      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="header">Transit Tracker</div>
-
+<div class="header">
   <div class="container">
+    <div class="header-row">
+      <div class="icon">🚌</div>
+      <div>
+        <div class="title">Upcoming 51B: Rockridge Bart</div>
 
-    <div class="card">
-      <div class="route">F</div>
-      <div class="destination">Downtown Berkeley</div>
+        <div class="alert">
+          <div id="alertDot" class="dot" style="background:red;"></div>
+          <span id="statusText">Consider Alternative Route</span>
+        </div>
 
-      <div id="availability" class="availability">
-        Seat Availability: 0/37
+        <div id="availability" class="availability">
+          Seat Availability: 0/37
+        </div>
       </div>
-
-      <div id="status" class="status good">
-        GOOD TO BOARD
-      </div>
-
-      <button id="connect">Connect to Sensor</button>
     </div>
+  </div>
+</div>
 
+<div class="container">
+
+  <div class="section-title">Alternative Routes</div>
+  <div class="section-header">Choose Stop</div>
+
+  <div class="timeline">
+    <div class="line"></div>
+
+    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Shattuck Ave</div></div>
+    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Ellsworth Ave</div></div>
+    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Dana Ave</div></div>
+    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Telegraph Ave</div></div>
+    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & College Ave</div></div>
+    <div class="stop"><div class="dot2"></div><div class="card">College Ave & Haste St</div></div>
+    <div class="stop"><div class="dot2"></div><div class="card">College Ave & Parker St</div></div>
+    <div class="stop"><div class="dot2"></div><div class="card">College Ave & Derby St</div></div>
   </div>
 
-  <script>
-    const threshold = 20;   // adjust this!
-    const maxSeats = 37;
+  <button id="connect">Connect to Sensor</button>
 
-    document.getElementById('connect').addEventListener('click', async () => {
-      try {
-        const device = await navigator.bluetooth.requestDevice({
-          filters: [{ name: 'UltrasonicSensor' }],
-          optionalServices: [0x180C]
-        });
+</div>
 
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(0x180C);
-        const characteristic = await service.getCharacteristic(0x2A56);
+<script>
+const threshold = 20;
+const maxSeats = 37;
 
-        await characteristic.startNotifications();
+document.getElementById('connect').addEventListener('click', async () => {
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ name: 'UltrasonicSensor' }],
+      optionalServices: [0x180C]
+    });
 
-        characteristic.addEventListener('characteristicvaluechanged', event => {
-          const raw = new TextDecoder().decode(event.target.value);
-          const distance = parseInt(raw);
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(0x180C);
+    const characteristic = await service.getCharacteristic(0x2A56);
 
-          let occupied = (distance < threshold) ? 1 : 0;
+    await characteristic.startNotifications();
 
-          // Update availability
-          const availabilityEl = document.getElementById('availability');
-          availabilityEl.textContent = `Seat Availability: ${occupied}/${maxSeats}`;
+    characteristic.addEventListener('characteristicvaluechanged', event => {
+      const raw = new TextDecoder().decode(event.target.value);
+      const distance = parseInt(raw);
 
-          // Update status
-          const statusEl = document.getElementById('status');
+      let occupied = (distance < threshold) ? 1 : 0;
 
-          if (occupied === 1) {
-            statusEl.textContent = "FULL - CONSIDER ALTERNATIVE ROUTE";
-            statusEl.className = "status full";
-          } else {
-            statusEl.textContent = "GOOD TO BOARD";
-            statusEl.className = "status good";
-          }
-        });
+      // Update seat count
+      document.getElementById('availability').textContent =
+        `Seat Availability: ${occupied}/${maxSeats}`;
 
-        document.getElementById('connect').textContent = "Connected ✅";
+      // Update status UI
+      const statusText = document.getElementById('statusText');
+      const alertDot = document.getElementById('alertDot');
 
-      } catch (err) {
-        alert("Failed: " + err);
+      if (occupied === 1) {
+        statusText.textContent = "Consider Alternative Route";
+        alertDot.style.background = "red";
+      } else {
+        statusText.textContent = "Good to Board";
+        alertDot.style.background = "green";
       }
     });
-  </script>
+
+    document.getElementById('connect').textContent = "Connected ✅";
+
+  } catch (err) {
+    alert("Failed: " + err);
+  }
+});
+</script>
 
 </body>
 </html>
