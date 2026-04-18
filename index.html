@@ -1,242 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Transit Tracker</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultrasonic Sensor Live</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: #f9fafb;
-      color: #111827;
+      text-align: center;
+      padding: 2rem;
+      background: #f0f0f0;
     }
-
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 16px;
+    h1 {
+      color: #333;
     }
-
-    .header {
-      border-top: 6px solid #60a5fa;
-      padding: 20px 16px;
-      background: white;
+    #distance {
+      font-size: 2rem;
+      color: #007AFF;
+      margin: 1rem 0;
     }
-
-    .header-row {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-
-    .icon {
-      font-size: 32px;
-    }
-
-    .title {
-      font-size: 20px;
+    #availability {
+      font-size: 2rem;
+      margin: 1rem 0;
       font-weight: bold;
     }
-
-    .alert {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-
-    .availability {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 4px;
-    }
-
-    .debug {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 2px;
-      font-family: monospace;
-    }
-
-    .section-title {
-      font-size: 12px;
-      color: #6b7280;
-      text-transform: uppercase;
-      margin-top: 20px;
-    }
-
-    .section-header {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 16px;
-    }
-
-    .timeline {
-      position: relative;
-      padding-left: 40px;
-    }
-
-    .line {
-      position: absolute;
-      left: 18px;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: #3b82f6;
-    }
-
-    .stop {
-      position: relative;
-      margin-bottom: 16px;
-    }
-
-    .dot2 {
-      position: absolute;
-      left: -28px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 10px;
-      height: 10px;
-      background: #3b82f6;
-      border-radius: 50%;
-      border: 4px solid white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    .card {
-      background: #f3f4f6;
-      padding: 12px;
-      border-radius: 10px;
-      font-weight: bold;
-    }
-
     button {
-      margin-top: 16px;
-      width: 100%;
-      padding: 12px;
-      background: #3b82f6;
-      color: white;
+      font-size: 1.2rem;
+      padding: 0.8rem 1.5rem;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      background: #007AFF;
+      color: white;
       cursor: pointer;
+    }
+    button:hover {
+      background: #005FCC;
     }
   </style>
 </head>
-
 <body>
 
-<div class="header">
-  <div class="container">
-    <div class="header-row">
-      <div class="icon">🚌</div>
-      <div>
-        <div class="title">Upcoming 51B: Rockridge Bart</div>
-
-        <div class="alert">
-          <div id="alertDot" class="dot" style="background: #22c55e;"></div>
-          <span id="statusText">Good to Board</span>
-        </div>
-
-        <div id="availability" class="availability">
-          Seat Availability: 0/37
-        </div>
-
-        <div id="debugDistance" class="debug">
-          dist: —
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="container">
-
-  <div class="section-title">Alternative Routes</div>
-  <div class="section-header">Choose Stop</div>
-
-  <div class="timeline">
-    <div class="line"></div>
-
-    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Shattuck Ave</div></div>
-    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Ellsworth Ave</div></div>
-    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Dana Ave</div></div>
-    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & Telegraph Ave</div></div>
-    <div class="stop"><div class="dot2"></div><div class="card">Durant Av & College Ave</div></div>
-    <div class="stop"><div class="dot2"></div><div class="card">College Ave & Haste St</div></div>
-    <div class="stop"><div class="dot2"></div><div class="card">College Ave & Parker St</div></div>
-    <div class="stop"><div class="dot2"></div><div class="card">College Ave & Derby St</div></div>
-  </div>
-
+  <h1>Ultrasonic Sensor Live</h1>
   <button id="connect">Connect to Sensor</button>
 
-</div>
+  <div id="distance">Distance: 0 cm</div>
+  <div id="availability">Seat Availability: 0/37</div>
 
-<script>
-const threshold = 20;
-const maxSeats = 37;
+  <script>
+    const threshold = 20;   // 🔴 adjust this based on your sensor
+    const maxSeats = 37;
 
-function updateUI(distance) {
-  const occupied = distance < threshold ? 1 : 0;
+    document.getElementById('connect').addEventListener('click', async () => {
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ name: 'UltrasonicSensor' }],
+          optionalServices: [0x180C]
+        });
 
-  document.getElementById('availability').textContent =
-    `Seat Availability: ${occupied}/${maxSeats}`;
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(0x180C);
+        const characteristic = await service.getCharacteristic(0x2A56);
 
-  document.getElementById('debugDistance').textContent =
-    `dist: ${distance} cm`;
+        await characteristic.startNotifications();
 
-  const statusText = document.getElementById('statusText');
-  const alertDot = document.getElementById('alertDot');
+        characteristic.addEventListener('characteristicvaluechanged', event => {
+          const raw = new TextDecoder().decode(event.target.value);
+          const distance = parseInt(raw);
 
-  if (occupied === 1) {
-    statusText.textContent = "Consider Alternative Route";
-    alertDot.style.background = "#ef4444";
-  } else {
-    statusText.textContent = "Good to Board";
-    alertDot.style.background = "#22c55e";
-  }
-}
+          // Update distance display
+          document.getElementById('distance').textContent =
+            `Distance: ${distance} cm`;
 
-document.getElementById('connect').addEventListener('click', async () => {
-  try {
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: 'UltrasonicSensor' }],
-      optionalServices: [0x180C]
+          // 🔥 Convert to seat occupancy (0 or 1)
+          let occupied = (distance < threshold) ? 1 : 0;
+
+          // Update seat availability
+          const availabilityText = `Seat Availability: ${occupied}/${maxSeats}`;
+          const availabilityEl = document.getElementById('availability');
+
+          availabilityEl.textContent = availabilityText;
+
+          // Color feedback
+          if (occupied === 1) {
+            availabilityEl.style.color = 'red';
+          } else {
+            availabilityEl.style.color = 'green';
+          }
+        });
+
+        document.getElementById('connect').textContent = "Connected ✅";
+        document.getElementById('connect').disabled = true;
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to connect: " + err);
+      }
     });
-
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(0x180C);
-    const characteristic = await service.getCharacteristic(0x2A56);
-
-    await characteristic.startNotifications();
-
-    characteristic.addEventListener('characteristicvaluechanged', event => {
-      const raw = new TextDecoder().decode(event.target.value);
-      const distance = parseInt(raw);
-      updateUI(distance);
-    });
-
-    document.getElementById('connect').textContent = "Connected ✅";
-    document.getElementById('connect').style.background = "#22c55e";
-    document.getElementById('connect').disabled = true;
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to connect: " + err);
-  }
-});
-</script>
+  </script>
 
 </body>
 </html>
