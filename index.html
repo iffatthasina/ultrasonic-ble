@@ -229,9 +229,11 @@ document.getElementById('connect').addEventListener('click', async () => {
 
     document.getElementById('connect').textContent = "Connected ✅";
     document.getElementById('connect').style.background = "#22c55e";
+    document.getElementById('connect').disabled = true;
 
   } catch (err) {
-    alert("Failed: " + err);
+    console.error(err);
+    alert("Failed to connect: " + err);
   }
 });
 </script>
